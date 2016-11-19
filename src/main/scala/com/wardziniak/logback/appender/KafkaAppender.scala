@@ -2,7 +2,7 @@ package com.wardziniak.logback.appender
 
 import java.util.Properties
 
-import ch.qos.logback.classic.PatternLayout
+import ch.qos.logback.classic.{LoggerContext, PatternLayout}
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.{Layout, UnsynchronizedAppenderBase}
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
@@ -10,7 +10,11 @@ import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 /**
   * Created by wardziniak on 13.11.2016.
   */
-class KafkaAppender extends UnsynchronizedAppenderBase[ILoggingEvent] {
+class KafkaAppender() extends UnsynchronizedAppenderBase[ILoggingEvent] {
+
+  var msg: String = ""
+
+  def setMsg(m: String): Unit = msg = m
 
   var props = new Properties()
   props.put("bootstrap.servers", "localhost:9092")
@@ -24,11 +28,12 @@ class KafkaAppender extends UnsynchronizedAppenderBase[ILoggingEvent] {
   var producer: KafkaProducer[String, String] = new KafkaProducer[String, String](props)
 
   var layout: PatternLayout = new PatternLayout
+  layout.setPattern(" %message %n ")
+  layout.setContext(new LoggerContext)
+  layout.start()
 
   override def append(eventObject: ILoggingEvent): Unit = {
-    layout.setPattern("%msg")
-    layout.start()
-    val message = layout.doLayout(eventObject) + "test" + layout.isStarted + ":"
+    val message = layout.doLayout(eventObject) + ":" + msg + ":"
     val record: ProducerRecord[String, String] = new ProducerRecord[String, String]("test1", message)
     producer.send(record).get()
   }
