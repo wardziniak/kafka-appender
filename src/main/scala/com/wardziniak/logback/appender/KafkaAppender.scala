@@ -33,7 +33,7 @@ class KafkaAppender() extends UnsynchronizedAppenderBase[ILoggingEvent] {
   layout.start()
 
   override def append(eventObject: ILoggingEvent): Unit = {
-    val message = layout.doLayout(eventObject) + ":" + msg + ":"
+    val message = layout.doLayout(eventObject)
     val record: ProducerRecord[String, String] = new ProducerRecord[String, String]("test1", message)
     producer.send(record).get()
   }
