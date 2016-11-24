@@ -1,15 +1,9 @@
 package com.wardziniak.logback.appender
 
-import java.util
-import java.util.Properties
-
 import ch.qos.logback.classic.LoggerContext
 import com.wardziniak.logback.appender.kafka.partitioner.LogerNamePartitioner
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.scalatest._
 import org.slf4j.LoggerFactory
-
-import collection.mutable.Stack
 
 
 /**
@@ -33,6 +27,21 @@ class KafkaAppenderTest extends FlatSpec {
     val kafkaAppender = new KafkaAppender
     kafkaAppender.setTopic("test4")
     kafkaAppender.setContext(loggerContext)
+    setProducerConfiguration(kafkaAppender)
+    kafkaAppender.start()
+    val logger = loggerContext.getLogger("Main")
+    logger.addAppender(kafkaAppender)
+
+    logger.error("Error message testfdfas")
+    logger.error("Error message test")
+    kafkaAppender.stop()
+  }
+
+  "Kafka producer" should " send message using LogerNamePartitioner" in {
+    val loggerContext = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
+    val kafkaAppender = new KafkaAppender
+    kafkaAppender.setTopic("test4")
+    kafkaAppender.setContext(loggerContext)
     kafkaAppender.setPartitioner(new LogerNamePartitioner)
     setProducerConfiguration(kafkaAppender)
     kafkaAppender.start()
@@ -41,12 +50,6 @@ class KafkaAppenderTest extends FlatSpec {
 
     logger.error("Error message testfdfas")
     logger.error("Error message test")
-  }
-
-  it should "throw NoSuchElementException if an empty stack is popped" in {
-    val emptyStack = new Stack[String]
-    assertThrows[NoSuchElementException] {
-      emptyStack.pop()
-    }
+    kafkaAppender.stop()
   }
 }
