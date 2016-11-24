@@ -19,5 +19,4 @@ trait ProducerConfigurator {
     val divided = property.split("=")
     addProperty(divided(0), divided(1))
   }
-
 }

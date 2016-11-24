@@ -4,6 +4,7 @@ import java.util
 import java.util.Properties
 
 import ch.qos.logback.classic.LoggerContext
+import com.wardziniak.logback.appender.kafka.partitioner.LogerNamePartitioner
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.scalatest._
 import org.slf4j.LoggerFactory
@@ -32,11 +33,13 @@ class KafkaAppenderTest extends FlatSpec {
     val kafkaAppender = new KafkaAppender
     kafkaAppender.setTopic("test4")
     kafkaAppender.setContext(loggerContext)
+    kafkaAppender.setPartitioner(new LogerNamePartitioner)
     setProducerConfiguration(kafkaAppender)
     kafkaAppender.start()
     val logger = loggerContext.getLogger("Main")
     logger.addAppender(kafkaAppender)
 
+    logger.error("Error message testfdfas")
     logger.error("Error message test")
   }
 
