@@ -34,7 +34,7 @@ class KafkaAppenderTest extends FlatSpec {
 
     logger.error("Error message testfdfas")
     logger.error("Error message test")
-    kafkaAppender.stop()
+    loggerContext.stop()
   }
 
   "Kafka producer" should " send message using LogerNamePartitioner" in {
@@ -49,7 +49,6 @@ class KafkaAppenderTest extends FlatSpec {
     logger.addAppender(kafkaAppender)
 
     logger.error("Error message testfdfas")
-    logger.error("Error message test")
-    kafkaAppender.stop()
+    loggerContext.stop()
   }
 }
