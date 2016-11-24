@@ -1,40 +1,30 @@
 package com.wardziniak.logback.appender
 
-import java.util.Properties
-
-import ch.qos.logback.classic.{LoggerContext, PatternLayout}
 import ch.qos.logback.classic.spi.ILoggingEvent
-import ch.qos.logback.core.{Layout, UnsynchronizedAppenderBase}
+import ch.qos.logback.classic.{LoggerContext, PatternLayout}
+import ch.qos.logback.core.UnsynchronizedAppenderBase
+import com.wardziniak.logback.appender.kafka.ProducerConfigurator
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 
 /**
   * Created by wardziniak on 13.11.2016.
   */
-class KafkaAppender() extends UnsynchronizedAppenderBase[ILoggingEvent] {
+class KafkaAppender() extends UnsynchronizedAppenderBase[ILoggingEvent] with ProducerConfigurator {
 
-  var msg: String = ""
+  var topic: String = "test"
 
-  def setMsg(m: String): Unit = msg = m
+  def setTopic(m: String): Unit = topic = m
 
-  var props = new Properties()
-  props.put("bootstrap.servers", "localhost:9092")
-  props.put("acks", "all")
-  props.put("retries", "0")
-  props.put("batch.size", "16384")
-  props.put("linger.ms", "1")
-  props.put("buffer.memory", "33554432")
-  props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-  props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-  var producer: KafkaProducer[String, String] = new KafkaProducer[String, String](props)
+  lazy val producer: KafkaProducer[String, String]  = new KafkaProducer[String, String](getProducerConfiguration)
 
   var layout: PatternLayout = new PatternLayout
-  layout.setPattern(" %message %n ")
+  layout.setPattern(" %message")
   layout.setContext(new LoggerContext)
   layout.start()
 
   override def append(eventObject: ILoggingEvent): Unit = {
     val message = layout.doLayout(eventObject)
-    val record: ProducerRecord[String, String] = new ProducerRecord[String, String]("test1", message)
+    val record: ProducerRecord[String, String] = new ProducerRecord[String, String](topic, message)
     producer.send(record).get()
   }
 
